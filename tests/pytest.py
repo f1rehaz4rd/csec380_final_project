@@ -2,4 +2,4 @@
 import pytest
 import requests
 
-assert requests.get("localhost:1337").status_code == 200
+assert requests.get("localhost").status_code == 200
