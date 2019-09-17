@@ -5,9 +5,6 @@ python:
 service:
   - docker
 
-before_install: 
-  - docker pull
-
 install:
   - docker build -t docker/.
   - docker run -d -p 127.0.0.1:1337:80
