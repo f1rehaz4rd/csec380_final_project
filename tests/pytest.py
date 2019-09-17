@@ -2,4 +2,7 @@
 import pytest
 import requests
 
-assert "Hello World" in requests.get("http://localhost").content
+def getContent(url):
+    return str(requests.get(url).content)
+
+assert "Hello World" in getContent("http://localhost")
