@@ -10,4 +10,4 @@ install:
   - pip install -r tests/requirements.txt
 
 script:
-  - tests/pytest
+  - pytest
