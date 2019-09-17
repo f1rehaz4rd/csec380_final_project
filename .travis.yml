@@ -6,8 +6,7 @@ service:
   - docker
 
 install:
-  - docker build -t docker/.
-  - docker run -d -p 127.0.0.1:1337:80
+  - docker-compose up --build
   - pip install -r tests/requirements.txt
 
 script:
