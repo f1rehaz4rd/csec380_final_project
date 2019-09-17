@@ -2,4 +2,4 @@
 import pytest
 import requests
 
-assert requests.get("localhost").status_code == 200
+assert "Hello World" in requests.get("http://localhost").content
