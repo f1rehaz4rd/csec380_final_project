@@ -1,8 +1,3 @@
-# pytest cache directory #
-
-This directory contains data from the pytest's cache plugin,
-which provides the `--lf` and `--ff` options, as well as the `cache` fixture.
-
-**Do not** commit this to version control.
-
-See [the docs](https://docs.pytest.org/en/latest/cache.html) for more information.
+# CSEC 380 Group Project
+This has all the files for our group project along with 
+the agile set up for our workflow.
