@@ -1,10 +1,7 @@
 language: python
-python:
-  - '3.7'
 
 install:
   - docker-compose up --build -d
-  - sleep 10
   - pip3 install -r requirements.txt
 
 script:
