@@ -1,6 +1,8 @@
-version: "3"
+version: "3.3"
 services:
-  web_server:
-    build: docker/.
+  nginx:
+    image: nginx:mainline-alpine
+    depends_on:
+      - mariadb
     ports:
       - "80:80"
