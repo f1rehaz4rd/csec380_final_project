@@ -1,0 +1,26 @@
+version: '3.3'
+services:
+  mariadb:
+    image: mariadb:10.2
+    container_name: mariadb
+    hostname: mariadb
+    environment:
+      MYSQL_ROOT_USER: root
+      MYSQL_ROOT_PASSWORD: Password-123!
+      MYSQL_DATABASE: accounts
+      MYSQL_USER: mariaUser
+      MYSQL_PASSWORD: Password-123!
+    ports:
+      - '3306:3306'
+    expose:
+      - '3306'
+    restart: on-failure
+    volumes:
+     - ${PWD}/mariadb:/var/lib/mysql
+
+  webapp:
+    build: ./web_application
+    container_name: flask
+    hostname: flask
+    ports:
+      - '5000:5000'
