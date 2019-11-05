@@ -12,26 +12,30 @@ and view others video uploads.
 # https://scotch.io/tutorials/authentication-and-authorization-with-flask-login
 
 ### Python Imports
-from flask import Flask, render_template, redirect, url_for, request, abort
-from flask_login import LoginManager, login_required, login_user, logout_user
+from flask import Flask, render_template, redirect, url_for, request, abort, session
 from urllib.parse import quote
-
 from flask_sqlalchemy import SQLAlchemy
+from flask_session import Session
 
-### Setting up the Flask App, Login Manager, and Database
+import secrets
+
+### Setting up the Flask App, Session Manager, and Database
 app = Flask(__name__, template_folder="templates")
 
-login_manager = LoginManager()
-login_manager.init_app(app)
+### Initialize the Session
+app.secret_key = secrets.token_bytes(32)
+app.config['SESSION_TYPE'] = 'filesystem'
+
+sess = Session()
+sess.init_app(app)
 
 ### Connect to the database
 DB_URI = "mysql+pymysql://root:Password-123%21@mariadb:3306/accounts"
 app.config['SQLALCHEMY_DATABASE_URI'] = DB_URI
 db = SQLAlchemy(app)
-# engine = sql.create_engine(URI, echo=True)
 
-### The user class which creates a user object
-class accounts(db.Model):
+### The users class which creates a user object
+class users(db.Model):
     username = db.Column(db.String(80), primary_key=True)
     password = db.Column(db.String(200))
 
@@ -40,11 +44,27 @@ class accounts(db.Model):
 
 
 ### The Flask Apps Code
-
 @app.route('/database')
-def databasefucn():
-    users = accounts.query.filter_by(username='admin').first()
-    return users.username
+def databasefunc():
+    """
+    Function testing database access with SQLAlchemy
+
+    It will output the username and password that is in the database
+    """
+    user = users.query.filter_by(username='admin').first()
+    return user.username + " " + user.password
+
+@app.route('/session')
+def sessionTest():
+    """
+    Function for testing the implementation of a session
+    per user log in.
+
+    It will out the session data to verify that it is saved
+    properly.
+    """
+    session['test'] = '12345'
+    return session.get('test')
 
 @app.route('/')
 def main():
@@ -69,16 +89,26 @@ def login():
     # Checks validates login request.
     if request.method == 'POST':
         if loginValidate():
-            return redirect(url_for('landingPage'))
+            return redirect(url_for('home'))
         else:
             error = 'Invalid Credentials. Please try again.'
 
+    # If there is no log in request it will send the user
+    # the login page.
     return render_template('login.html', error=error)
 
-@app.route('/landingPage')
-@login_required
-def landingPage():
+@app.route('/home')
+def home():
+    """
+    This is the landing page that you get to after log in.
+
+    During the second part of the project this will be replaced
+    with all the videos and profile settings. 
+    """
     return "Congrats! You logged in sucessfully"
 
 if __name__ == '__main__':
-    app.run(debug=True,host='0.0.0.0')
+    """
+    This starts the server up on port 80
+    """
+    app.run(debug=True,host='0.0.0.0', port=80)

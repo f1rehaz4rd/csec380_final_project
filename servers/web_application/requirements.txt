@@ -1,4 +1,4 @@
 Flask
-flask-login
+Flask-Session
 flask-sqlalchemy
 PyMySQL
