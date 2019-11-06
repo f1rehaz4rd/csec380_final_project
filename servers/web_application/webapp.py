@@ -115,7 +115,7 @@ def home():
     with all the videos and profile settings. 
     """
     if request.method == "POST":
-        redirect(url_for('logout'))
+        return redirect(url_for('logout'))
 
     if 'token' in session:
         # return "Congrats! You logged in sucessfully " + session.get('username')
