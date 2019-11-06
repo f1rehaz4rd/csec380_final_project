@@ -1,0 +1,18 @@
+<html>
+  <head>
+    <title> Home </title>
+  </head>
+  <body>
+    <div>
+      <h1>Home Page</h1>
+      <br>
+      {% if username %}
+        <p class="username"> Welcome {{ username }}!!!
+      {% endif %}
+      <form action="" method="post">
+        <input class="btn btn-default" type="submit" value="Logout">
+      </form>
+
+    </div>
+  </body>
+</html>

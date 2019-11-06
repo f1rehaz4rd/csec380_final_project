@@ -54,28 +54,25 @@ def databasefunc():
     user = users.query.filter_by(username='admin').first()
     return user.username + " " + user.password
 
-@app.route('/session')
-def sessionTest():
-    """
-    Function for testing the implementation of a session
-    per user log in.
-
-    It will out the session data to verify that it is saved
-    properly.
-    """
-    session['test'] = '12345'
-    return session.get('test')
+@app.route('/token')
+def testToken():
+    return "User Session: " + session.get('username') + "\nsession: " + str(session.get('token'))
 
 @app.route('/')
 def main():
     return redirect(url_for('login'))
 
-def loginValidate():
+def loginValidate(name, password):
     """
-    Validates a users log in request.
+    Validates a users log in request by checking the
+    database.
     """
-    return request.form['username'] == "admin" \
-        or request.form['password'] == "admin"
+    user = users.query.filter_by(username=name).first()
+    if user is not None:
+        if password == user.password:
+            return True
+
+    return False
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -88,7 +85,9 @@ def login():
 
     # Checks validates login request.
     if request.method == 'POST':
-        if loginValidate():
+        if loginValidate(request.form['username'].strip(), request.form['password']):
+            session['username'] = request.form['username'].strip()
+            session['token'] = secrets.token_urlsafe(32)   
             return redirect(url_for('home'))
         else:
             error = 'Invalid Credentials. Please try again.'
@@ -97,7 +96,17 @@ def login():
     # the login page.
     return render_template('login.html', error=error)
 
-@app.route('/home')
+@app.route('/logout')
+def logout():
+    if 'username' in session:
+        session.pop('username')
+    
+    if 'token' in session:
+        session.pop('token')
+
+    return redirect(url_for('login'))
+
+@app.route('/home', methods=['GET', 'POST'])
 def home():
     """
     This is the landing page that you get to after log in.
@@ -105,7 +114,14 @@ def home():
     During the second part of the project this will be replaced
     with all the videos and profile settings. 
     """
-    return "Congrats! You logged in sucessfully"
+    if request.method == "POST":
+        redirect(url_for('logout'))
+
+    if 'token' in session:
+        # return "Congrats! You logged in sucessfully " + session.get('username')
+        return render_template('home.html', username=session.get('username'))
+    
+    return "You are not logged in, please log in to view the page."
 
 if __name__ == '__main__':
     """
