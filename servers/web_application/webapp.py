@@ -12,12 +12,14 @@ and view others video uploads.
 # https://scotch.io/tutorials/authentication-and-authorization-with-flask-login
 
 ### Python Imports
-from flask import Flask, render_template, redirect, url_for, request, abort, session
+from flask import Flask, render_template, redirect, url_for, request, abort, session, send_from_directory
 from urllib.parse import quote
 from flask_sqlalchemy import SQLAlchemy
 from flask_session import Session
+from werkzeug.utils import secure_filename
 
 import secrets
+import os
 
 ### Setting up the Flask App, Session Manager, and Database
 app = Flask(__name__, template_folder="templates")
@@ -28,6 +30,11 @@ app.config['SESSION_TYPE'] = 'filesystem'
 
 sess = Session()
 sess.init_app(app)
+
+### Sets up the upload conditions
+UPLOAD_FOLDER = '/app/static/videos'
+ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 ### Connect to the database
 DB_URI = "mysql+pymysql://root:Password-123%21@mariadb:3306/accounts"
@@ -44,10 +51,34 @@ class users(db.Model):
 
 
 ### The Flask Apps Code
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'],
+                               filename)
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 @app.route('/upload', methods=['GET', 'POST'])
 def testUpload():
 
-    return "This is the test upload page"
+    if request.method == 'POST':
+        if 'file' not in request.files:
+            return redirect(request.url)
+
+        file = request.files['file']
+
+        if file.filename == '':
+            return redirect(request.url)
+
+        # Need to add extension verificaiton 
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            return redirect(url_for('uploaded_file', filename=filename))
+
+    return render_template("upload.html")
 
 @app.route('/token')
 def testToken():
