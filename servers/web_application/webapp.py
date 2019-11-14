@@ -44,18 +44,16 @@ class users(db.Model):
 
 
 ### The Flask Apps Code
-@app.route('/database')
-def databasefunc():
-    """
-    Function testing database access with SQLAlchemy
+@app.route('/upload', methods=['GET', 'POST'])
+def testUpload():
 
-    It will output the username and password that is in the database
-    """
-    user = users.query.filter_by(username='admin').first()
-    return user.username + " " + user.password
+    return "This is the test upload page"
 
 @app.route('/token')
 def testToken():
+    """
+    This is a test function that will be removed after development of the app.
+    """
     return "User Session: " + session.get('username') + "\nsession: " + str(session.get('token'))
 
 @app.route('/')
@@ -82,6 +80,8 @@ def login():
     and authentication.
     """
     error = None
+    if 'username' in session:
+        return redirect(url_for('home'))
 
     # Checks validates login request.
     if request.method == 'POST':
@@ -101,6 +101,7 @@ def logout():
     if 'username' in session:
         session.pop('username')
     
+    # Impliment Token into the database so that I can check
     if 'token' in session:
         session.pop('token')
 
@@ -118,7 +119,6 @@ def home():
         return redirect(url_for('logout'))
 
     if 'token' in session:
-        # return "Congrats! You logged in sucessfully " + session.get('username')
         return render_template('home.html', username=session.get('username'))
     
     return "You are not logged in, please log in to view the page."
