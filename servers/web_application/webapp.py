@@ -51,8 +51,9 @@ class users(db.Model):
 
 ### Class for the video metadata
 class videos(db.Model):
-    filename = db.Column(db.String(50), primary_key=True)
+    filename = db.Column(db.String(100), primary_key=True)
     path = db.Column(db.String(100))
+    username = db.Column(db.String(80))
 
     def __repr__(self):
         return f"<Filename: {self.filename} Path: {self.path}"
@@ -64,7 +65,7 @@ def authorize():
     """
     return 'token' in session
 
-@app.route('/uploads/<filename>')
+@app.route('/display/<filename>')
 def uploaded_file(filename):
 
     if not authorize():
@@ -72,6 +73,12 @@ def uploaded_file(filename):
 
     return send_from_directory(app.config['UPLOAD_FOLDER'],
                                filename)
+
+
+def get_uploads():
+    video_list = videos.query.all()
+
+    return video_list
 
 def allowed_file(filename):
     """
@@ -82,7 +89,7 @@ def allowed_file(filename):
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @app.route('/upload', methods=['GET', 'POST'])
-def testUpload():
+def upload_video():
     if not authorize():
         return redirect(url_for('login'))
 
@@ -102,7 +109,8 @@ def testUpload():
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             # Save the metadata to the database
 
-            video = videos(filename=filename, path=app.config['UPLOAD_FOLDER'])
+            video = videos(filename=filename,\
+                 path=app.config['UPLOAD_FOLDER'], username=session.get('username'))
             db.session.add(video)
             db.session.commit()
 
@@ -118,7 +126,7 @@ def testToken():
     if not authorize():
         return redirect(url_for('login'))
 
-    return "User Session: " + session.get('username') + "\nsession: " + str(session.get('token'))
+    return "User Session: "+session.get('username')+"\nsession:"+str(session.get('token'))
 
 @app.route('/')
 def main():
@@ -176,6 +184,14 @@ def logout():
         session.pop('token')
 
     return redirect(url_for('login'))
+
+@app.route('/uploads')
+def uploads_list():
+    if not authorize():
+        return redirect(url_for('login'))
+
+    video_list = get_uploads()
+    return render_template('video_display.html', len=len(video_list), display=video_list)
 
 @app.route('/home', methods=['GET', 'POST'])
 def home():
