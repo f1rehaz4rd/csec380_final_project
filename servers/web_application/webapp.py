@@ -43,38 +43,37 @@ db = SQLAlchemy(app)
 
 ### The users class which creates a user object
 class users(db.Model):
-    username = db.Column(db.String(80), primary_key=True)
+    username = db.Column(db.String(30), primary_key=True)
     password = db.Column(db.String(200))
+    session_token = db.Column(db.String(200))
 
     def __repr__(self):
         return f"<Username: {self.username} Password: {self.password}"
 
 ### Class for the video metadata
 class videos(db.Model):
-    filename = db.Column(db.String(100), primary_key=True)
+    title = db.Column(db.String(100), primary_key=True)
+    filename = db.Column(db.String(50))
+    filetype = db.Column(db.String(5))
     path = db.Column(db.String(100))
-    url = db.Column(db.String(200))
-    username = db.Column(db.String(80))
+    url = db.Column(db.String(100))
+    username = db.Column(db.String(30))
 
     def __repr__(self):
         return f"<Filename: {self.filename} Path: {self.path}"
 
-### The Flask Apps Code
+
+### Helper Functions
 def authorize():
     """
     Verifies if the user is logged in.
     """
-    return 'token' in session
+    if 'token' in session:
+        user = users.query.filter_by(username=session.get('username')).first()
+        if session.get('token') == user.session_token:
+            return True
 
-@app.route('/display/<filename>')
-def uploaded_file(filename):
-
-    if not authorize():
-        return redirect(url_for('login'))        
-
-    return send_from_directory(app.config['UPLOAD_FOLDER'],
-                               filename)
-
+    return False
 
 def get_uploads():
     video_list = videos.query.all()
@@ -88,6 +87,35 @@ def allowed_file(filename):
     """
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def loginValidate(name, password):
+    """
+    Validates a users log in request by checking the
+    database.
+    """
+    user = users.query.filter_by(username=name).first()
+    if user is not None:
+        if password == user.password:
+            # Creates the session data
+            session['username'] = request.form['username'].strip()
+            session['token'] = secrets.token_urlsafe(32)  
+            # Addes session data to the database
+            user.session_token = session.get('token')
+            db.session.commit()
+            return True
+
+    return False
+
+### The Flask Apps Code
+@app.route('/display/<filename>')
+def uploaded_file(filename):
+
+    if not authorize():
+        return redirect(url_for('login'))        
+
+    return send_from_directory(app.config['UPLOAD_FOLDER'],
+                               filename)
+
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload_video():
@@ -137,18 +165,6 @@ def main():
 
     return redirect(url_for('login'))
 
-def loginValidate(name, password):
-    """
-    Validates a users log in request by checking the
-    database.
-    """
-    user = users.query.filter_by(username=name).first()
-    if user is not None:
-        if password == user.password:
-            return True
-
-    return False
-
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     """
@@ -162,8 +178,7 @@ def login():
     # Checks validates login request.
     if request.method == 'POST':
         if loginValidate(request.form['username'].strip(), request.form['password']):
-            session['username'] = request.form['username'].strip()
-            session['token'] = secrets.token_urlsafe(32)   
+            # NOTE: Sets the session information in the loginValidate function
             return redirect(url_for('home'))
         else:
             error = 'Invalid Credentials. Please try again.'
