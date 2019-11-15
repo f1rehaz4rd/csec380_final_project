@@ -33,7 +33,7 @@ sess.init_app(app)
 
 ### Sets up the upload conditions
 UPLOAD_FOLDER = '/app/static/videos'
-ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
+ALLOWED_EXTENSIONS = {'avi', 'flv', 'wmv', 'mov', 'mp4'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 ### Connect to the database
@@ -49,6 +49,13 @@ class users(db.Model):
     def __repr__(self):
         return f"<Username: {self.username} Password: {self.password}"
 
+### Class for the video metadata
+class videos(db.Model):
+    filename = db.Column(db.String(50), primary_key=True)
+    path = db.Column(db.String(100))
+
+    def __repr__(self):
+        return f"<Filename: {self.filename} Path: {self.path}"
 
 ### The Flask Apps Code
 @app.route('/uploads/<filename>')
@@ -57,6 +64,10 @@ def uploaded_file(filename):
                                filename)
 
 def allowed_file(filename):
+    """
+    This checks to see if the file is one of the allowed
+    file types. If its not it returns false.
+    """
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
@@ -74,8 +85,15 @@ def testUpload():
 
         # Need to add extension verificaiton 
         if file and allowed_file(file.filename):
+            # Save the file to the server
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            # Save the metadata to the database
+
+            video = videos(filename=filename, path=app.config['UPLOAD_FOLDER'])
+            db.session.add(video)
+            db.session.commit()
+
             return redirect(url_for('uploaded_file', filename=filename))
 
     return render_template("upload.html")
