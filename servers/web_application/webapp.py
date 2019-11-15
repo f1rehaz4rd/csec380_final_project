@@ -58,8 +58,18 @@ class videos(db.Model):
         return f"<Filename: {self.filename} Path: {self.path}"
 
 ### The Flask Apps Code
+def authorize():
+    """
+    Verifies if the user is logged in.
+    """
+    return 'token' in session
+
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
+
+    if not authorize():
+        return redirect(url_for('login'))        
+
     return send_from_directory(app.config['UPLOAD_FOLDER'],
                                filename)
 
@@ -73,6 +83,8 @@ def allowed_file(filename):
 
 @app.route('/upload', methods=['GET', 'POST'])
 def testUpload():
+    if not authorize():
+        return redirect(url_for('login'))
 
     if request.method == 'POST':
         if 'file' not in request.files:
@@ -103,10 +115,16 @@ def testToken():
     """
     This is a test function that will be removed after development of the app.
     """
+    if not authorize():
+        return redirect(url_for('login'))
+
     return "User Session: " + session.get('username') + "\nsession: " + str(session.get('token'))
 
 @app.route('/')
 def main():
+    if authorize():
+        return redirect(url_for('home'))
+
     return redirect(url_for('login'))
 
 def loginValidate(name, password):
@@ -121,7 +139,6 @@ def loginValidate(name, password):
 
     return False
 
-
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     """
@@ -129,7 +146,7 @@ def login():
     and authentication.
     """
     error = None
-    if 'username' in session:
+    if authorize():
         return redirect(url_for('home'))
 
     # Checks validates login request.
@@ -147,6 +164,10 @@ def login():
 
 @app.route('/logout')
 def logout():
+
+    if not authorize():
+        return redirect(url_for('login'))
+
     if 'username' in session:
         session.pop('username')
     
@@ -164,13 +185,13 @@ def home():
     During the second part of the project this will be replaced
     with all the videos and profile settings. 
     """
+    if not authorize():
+        return redirect(url_for('login'))
+    
     if request.method == "POST":
         return redirect(url_for('logout'))
-
-    if 'token' in session:
-        return render_template('home.html', username=session.get('username'))
     
-    return "You are not logged in, please log in to view the page."
+    return render_template('home.html', username=session.get('username'))
 
 if __name__ == '__main__':
     """
