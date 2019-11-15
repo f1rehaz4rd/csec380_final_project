@@ -1,0 +1,22 @@
+<div class="header">
+<h1>My Account</h1>
+</div>
+
+
+<head>
+<style type="text/css">
+body {margin: 30px;}
+</style>
+<meta charset=utf-8 />
+<title>Remove items from a dropdown list</title>
+</head>
+
+<body>
+<form>
+<select id="videoSelect">
+{%for i in range(0, len)%}
+    <option>{{display[i].filename}}</option>
+{%endfor%}
+</select>
+<input type="button" onclick="removevideo()" value="Delete">
+</form></body>
