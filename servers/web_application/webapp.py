@@ -128,7 +128,7 @@ def upload_video():
 
         file = request.files['file']
 
-        if file.filename == '':
+        if file.filename == '' or request.form['title'] == '':
             return redirect(request.url)
 
         # Need to add extension verificaiton 
@@ -139,8 +139,10 @@ def upload_video():
             # Save the metadata to the database
             url= "http://localhost:80/display/" + filename
 
-            video = videos(filename=filename, path=app.config['UPLOAD_FOLDER'], \
-                 url=url, username=session.get('username'))
+            # NEED TO SANITIZE THE TITLE INPUT
+
+            video = videos(title=request.form['title'],filename=filename, filetype=filename.split('.')[1],\
+                path=app.config['UPLOAD_FOLDER'], url=url, username=session.get('username'))
             db.session.add(video)
             db.session.commit()
 
@@ -189,7 +191,6 @@ def login():
 
 @app.route('/logout')
 def logout():
-
     if not authorize():
         return redirect(url_for('login'))
 
