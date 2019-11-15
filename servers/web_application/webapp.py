@@ -116,7 +116,7 @@ def upload_video():
             db.session.add(video)
             db.session.commit()
 
-            return redirect(url_for('uploaded_file', filename=filename))
+            return redirect(url_for('home'))
 
     return render_template("upload.html")
 
@@ -207,7 +207,13 @@ def home():
         return redirect(url_for('login'))
     
     if request.method == "POST":
-        return redirect(url_for('logout'))
+        if request.form['submit_button'] == 'logout':
+            return redirect(url_for('logout'))
+        elif request.form['submit_button'] == 'account':
+            pass
+        elif request.form['submit_button'] == 'upload':
+            return redirect(url_for('upload_video'))
+        
 
     video_list = get_uploads()
     
