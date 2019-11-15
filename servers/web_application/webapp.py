@@ -53,6 +53,7 @@ class users(db.Model):
 class videos(db.Model):
     filename = db.Column(db.String(100), primary_key=True)
     path = db.Column(db.String(100))
+    url = db.Column(db.String(200))
     username = db.Column(db.String(80))
 
     def __repr__(self):
@@ -108,9 +109,10 @@ def upload_video():
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             # Save the metadata to the database
+            url= "http://localhost:80/display/" + filename
 
-            video = videos(filename=filename,\
-                 path=app.config['UPLOAD_FOLDER'], username=session.get('username'))
+            video = videos(filename=filename, path=app.config['UPLOAD_FOLDER'], \
+                 url=url, username=session.get('username'))
             db.session.add(video)
             db.session.commit()
 
@@ -206,8 +208,10 @@ def home():
     
     if request.method == "POST":
         return redirect(url_for('logout'))
+
+    video_list = get_uploads()
     
-    return render_template('home.html', username=session.get('username'))
+    return render_template('home.html', username=session.get('username'), len=len(video_list), display=video_list)
 
 if __name__ == '__main__':
     """
