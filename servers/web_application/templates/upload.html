@@ -1,20 +1,31 @@
-<!doctype html>
+<!DOCTYPE html>
+
+<html>
 <head>
-<title>Upload new File</title>
+  <title>Upload Files</title>
 </head>
 
+<body>
+<div class="header">
+<h1>Upload Files</h1>
+</div>
+
+
 <h2> What is the title? </h2>
-<form method=post enctype=multipart/form-data>
-  <input type="text" placeholder="Title" name="title" value="{{
-    request.form.title }}">
+  <form method=post enctype=multipart/form-data>
+    <input type="text" placeholder="Title" name="title" value="{{
+      request.form.title }}">
 
-  <h1>Upload new File</h1>
-  <input type=file name=file>
-  <input type=submit value=Upload>
+    <h2>Upload new File</h2>
+      <input type=file name=file>
+      <input type=submit value=Upload>
 
-  <h1>Video Link</h1>
-  <input type="text" placeholder="Video URL" name="videourl" value="{{
-    request.form.videourl }}">
-  <input type=submit value=Upload>
-  
-</form>
+    <br>
+
+    <h2>Video Link</h2>
+      <input type="text" placeholder="Video URL" name="videourl" value="{{
+        request.form.videourl }}">
+      <input type=submit value=Upload>
+  </form>
+  </body>
+</html> 
