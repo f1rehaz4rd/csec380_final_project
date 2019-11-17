@@ -157,7 +157,6 @@ def upload_video():
             except:
                 return redirect(request.url)
 
-
         elif request.form['videourl'] is not None: # If it is a link that was submited and not a video
             upload_url = request.form['videourl']
 
@@ -168,7 +167,7 @@ def upload_video():
                 filename = filename[len(filename) - 1]
                 filename = secure_filename(filename) # Secures the filename
                 # Saves the file to the server
-                fd = open(app.config['UPLOAD_FOLDER'] + filename, "wb")
+                fd = open(os.path.join(app.config['UPLOAD_FOLDER'], filename), "wb")
                 fd.write(req.content)
                 fd.close()
 
@@ -181,8 +180,7 @@ def upload_video():
 
                 return redirect(url_for('home'))
             except:
-                print("Oh no REEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE")
-                return redirect(url_for('testToken'))
+                return redirect(request.url)
         
     return render_template("upload.html")
 
