@@ -1,6 +1,7 @@
 <html>
 <head>
   <title>MeTube</title>
+  <link rel="stylesheet" href="../static/css/home.css">
 </head>
 
 
@@ -15,18 +16,15 @@
 
 
 {%for i in range(0,len)%}
-
-  <h1>{{display[i].filename}} : {{display[i].username}}</h1>
-
   <div class="class33">
-    <h1>{{display[i].title}}</h1>
+    <h1>{{display[i].title}} : {{display[i].username}}</h1>
       <video width="400" controls>
         <source src={{display[i].url}} type=video/mp4>
       </video>
   </div>
 {%endfor%}
 
-  <br>
+<br>
   <div class="class33">
     <h1>i hate everything</h1>
       <video width="400" controls>
@@ -36,23 +34,19 @@
         <source src=http://techslides.com/demos/sample-videos/small.3gp type=video/3gp>
       </video>
   </div>
-
-
-
-
 <br>
 
 <form action="" method="post">
-  <button class= "button1" type="submit" value="Logout" style="width:auto;">Log Out</button>
+  <button class= "button1" name='submit_button' type="submit" value="logout" style="width:auto;">Log Out</button>
 </form>
 
 <form action="" method="post">
-  <button class= "button2" type="submit" value="account" style="width:auto;">My Account</button>
+  <button class= "button2" name='submit_button' type="submit" value="account" style="width:auto;">My Account</button>
 </form>
 
-
-
-<button class= "button4" style="width:auto;">Upload</button>
+<form action="" method="post">
+  <button class= "button4" name='submit_button' value="upload" style="width:auto;">Upload</button>
+</form>
 
 <div id="id02" class="modal">
   <form class="modal-content animate" action="/action_page.php" method="post">
