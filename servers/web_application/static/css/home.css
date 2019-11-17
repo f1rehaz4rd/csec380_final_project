@@ -170,7 +170,11 @@ span.psw {
 }
 
 h3 {
-  font-size: 20px;
+  font-size: 30px;
+}
+
+h4 {
+  font-size: 25px;
 
 }
 #upload_file{
