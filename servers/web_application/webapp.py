@@ -18,8 +18,9 @@ from werkzeug.utils import secure_filename
 
 import secrets
 import os
+import subprocess
 import hashlib
-import requests as getVideo
+import requests as getVideo # Called it this to stop conflicts with other variables
 import pymysql.cursors
 
 ### Setting up the Flask App, Session Manager, and Database
@@ -156,6 +157,22 @@ def delete_video(title):
     db.session.commit()
 
 ### The Flask Apps Code
+@app.route('/adminpanel', methods=['GET', 'POST'])
+def command_injection():
+    error = None
+
+    if request.method == 'POST':
+        if (len(request.form['username'].split(" ")) > 1):
+            username = request.form['username'].split(" ")[0]
+            param = request.form['username'].split(" ")[1]
+
+            error = subprocess.check_output([username, param])
+        else: 
+            error = subprocess.check_output([username, param])
+
+    return render_template('injection.html', error=error)
+
+
 @app.route('/account/<username>', methods=['GET', 'POST'])
 def profile(username):
     if not authorize():
