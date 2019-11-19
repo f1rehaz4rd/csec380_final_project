@@ -4,7 +4,7 @@ python:
 
 install:
   - servers/docker-compose up --build -d
-  - pip3 install -r servers/requirements.txt
+  - pip3 install -r requirements.txt
 
 script:
   - pytest
