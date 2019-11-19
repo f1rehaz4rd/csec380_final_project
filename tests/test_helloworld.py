@@ -1,8 +1,8 @@
 import pytest
 import requests
 
-def getContent(url):
-    return str(requests.get(url).content)
+def getStatus(url):
+    return requests.get(url).status_code
 
 def test_server():
-    assert "Hello World" in getContent("http://localhost")
+    assert 200 == getStatus("http://localhost")
