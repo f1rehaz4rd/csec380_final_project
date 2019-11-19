@@ -3,8 +3,8 @@ python:
   - "3.7"
 
 install:
-  - ./servers/docker-compose up --build -d
-  - pip3 install -r ./servers/requirements.txt
+  - servers/docker-compose up --build -d
+  - pip3 install -r servers/requirements.txt
 
 script:
   - pytest
