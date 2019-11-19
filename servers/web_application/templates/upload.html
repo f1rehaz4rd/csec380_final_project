@@ -6,26 +6,25 @@
 </head>
 
 <body>
-<div class="header">
-<h1>Upload Files</h1>
-</div>
+  <div class="header">
+  <h1>Upload Files</h1>
+  </div>
 
+  <h2> What is the title? </h2>
+    <form method=post enctype=multipart/form-data>
+      <input type="text" placeholder="Title" name="title" value="{{
+        request.form.title }}">
 
-<h2> What is the title? </h2>
-  <form method=post enctype=multipart/form-data>
-    <input type="text" placeholder="Title" name="title" value="{{
-      request.form.title }}">
-
-    <h2>Upload new File</h2>
+      <h1>Upload new File</h1>
       <input type=file name=file>
       <input type=submit value=Upload>
 
-    <br>
+      <br>
 
-    <h2>Video Link</h2>
+      <h2>Video Link</h2>
       <input type="text" placeholder="Video URL" name="videourl" value="{{
         request.form.videourl }}">
       <input type=submit value=Upload>
-  </form>
-  </body>
+    </form>
+</body>
 </html> 

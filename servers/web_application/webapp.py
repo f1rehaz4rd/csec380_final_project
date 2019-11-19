@@ -9,8 +9,6 @@ and view others video uploads.
 @Author: Jon Bauer (JonBauer123)
 @Contributors: 
 """
-# https://scotch.io/tutorials/authentication-and-authorization-with-flask-login
-
 ### Python Imports
 from flask import Flask, render_template, redirect, url_for, request, abort, session, send_from_directory
 from urllib.parse import quote
@@ -20,7 +18,9 @@ from werkzeug.utils import secure_filename
 
 import secrets
 import os
+import hashlib
 import requests as getVideo
+import pymysql.cursors
 
 ### Setting up the Flask App, Session Manager, and Database
 app = Flask(__name__, template_folder="templates")
@@ -96,6 +96,7 @@ def loginValidate(name, password):
     """
     user = users.query.filter_by(username=name).first()
     if user is not None:
+        password = hashlib.sha256(bytes(password.encode())).hexdigest()
         if password == user.password:
             # Creates the session data
             session['username'] = request.form['username'].strip()
@@ -107,23 +108,90 @@ def loginValidate(name, password):
 
     return False
 
+def bad_login_validate(name, password):
+    """
+    Validates login, but is vuln to sql injection
+    """
+    password = hashlib.sha256(bytes(password.encode())).hexdigest()
+    val = ""
+
+    connection = pymysql.connect(host='mariadb',
+                                user='root',
+                                password='Password-123!',
+                                db='accounts',
+                                charset='utf8mb4',
+                                cursorclass=pymysql.cursors.DictCursor)
+
+    try:
+        with connection.cursor() as cursor:
+            sql = "SELECT username, password FROM users WHERE username='%s'"
+            cursor.execute(sql % name)
+            result = cursor.fetchall()
+            for item in result:
+                val += item['username'] + ":" + item['password'] + "\n"
+                if item['username'] == name and item['password'] == password:
+                    return item['username'] + ":" + item['password'] + "\n"
+            return val
+    finally:
+        connection.close() 
+
+    return False
+
+
+def file_check(filename):
+    return os.path.isfile(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+
+def get_uploads_user():
+    video_list = videos.query.filter_by(username=session.get('username')).all()
+    return video_list
+
+def delete_video(title):
+    # Deletes the file
+    video = videos.query.filter_by(title=title).first()
+    delete_file = os.path.join(app.config['UPLOAD_FOLDER'], video.filename)
+    os.remove(delete_file)
+
+    # Deletes the Database record
+    videos.query.filter_by(title=title).delete()
+    db.session.commit()
+
 ### The Flask Apps Code
+@app.route('/account/<username>', methods=['GET', 'POST'])
+def profile(username):
+    if not authorize():
+        return redirect(url_for('login'))
+
+    if request.method == 'POST':
+        if request.form['submit_button'] == 'home':
+            return redirect(url_for('home'))
+        elif request.form['submit_button'] == 'delete':
+            delete_video(request.form['selected'])
+    
+    video_list = get_uploads_user()
+
+    if video_list is not None:
+        return render_template('account.html', username=session.get('username'), len=len(video_list), display=video_list)
+
+    return render_template('account.html', username=session.get('username'))
+
+@app.route('/account')
+def profile_redirect():
+    if not authorize():
+        return redirect(url_for('login'))  
+
+    return redirect(url_for('profile', username=session.get('username')))
+
 @app.route('/display/<filename>')
 def uploaded_file(filename):
-
     if not authorize():
         return redirect(url_for('login'))        
 
-    return send_from_directory(app.config['UPLOAD_FOLDER'],
-                               filename)
-
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload_video():
     """
     Handles uplaoding a video.
-    TODO:
-        Add file already exists checking
     """
 
     if not authorize():
@@ -142,6 +210,10 @@ def upload_video():
             try:
                 # Save the file to the server
                 filename = secure_filename(file.filename)
+
+                if file_check(filename):
+                    filename = "1" + filename 
+
                 file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
                 # Save the metadata to the database
                 url= "http://localhost:80/display/" + filename
@@ -166,6 +238,10 @@ def upload_video():
                 filename = upload_url.split('/')
                 filename = filename[len(filename) - 1]
                 filename = secure_filename(filename) # Secures the filename
+
+                if file_check(filename):
+                    filename = "1" + filename 
+
                 # Saves the file to the server
                 fd = open(os.path.join(app.config['UPLOAD_FOLDER'], filename), "wb")
                 fd.write(req.content)
@@ -183,16 +259,6 @@ def upload_video():
                 return redirect(request.url)
         
     return render_template("upload.html")
-
-@app.route('/token')
-def testToken():
-    """
-    This is a test function that will be removed after development of the app.
-    """
-    if not authorize():
-        return redirect(url_for('login'))
-
-    return "User Session: "+session.get('username')+"\nsession:"+str(session.get('token'))
 
 @app.route('/')
 def main():
@@ -213,9 +279,28 @@ def login():
 
     # Checks validates login request.
     if request.method == 'POST':
-        if loginValidate(request.form['username'].strip(), request.form['password']):
+        
+        # This is the secure login form
+        # if loginValidate(request.form['username'].strip(), request.form['password']):
             # NOTE: Sets the session information in the loginValidate function
+        #   return redirect(url_for('home'))
+        # else:
+        #   error = 'Invalid Credentials. Please try again.'
+
+        # Classic SQL Injection
+        error = bad_login_validate(request.form['username'].strip(), request.form['password'])
+        password = hashlib.sha256(bytes(request.form['password'].encode())).hexdigest()
+        if request.form['username'] in error and password in error:  # Insecure login
+            # Sets the session data
+            session['username'] = request.form['username'].strip()
+            session['token'] = secrets.token_urlsafe(32)  
+            # Addes session data to the database
+            user = users.query.filter_by(username=request.form['username'].strip()).first()
+            user.session_token = session.get('token')
+            db.session.commit()
             return redirect(url_for('home'))
+        elif request.form['username'] not in error and password not in error:
+            pass
         else:
             error = 'Invalid Credentials. Please try again.'
 
@@ -231,7 +316,6 @@ def logout():
     if 'username' in session:
         session.pop('username')
     
-    # Impliment Token into the database so that I can check
     if 'token' in session:
         session.pop('token')
 
@@ -260,11 +344,10 @@ def home():
         if request.form['submit_button'] == 'logout':
             return redirect(url_for('logout'))
         elif request.form['submit_button'] == 'account':
-            pass
+            return redirect(url_for('profile_redirect'))
         elif request.form['submit_button'] == 'upload':
             return redirect(url_for('upload_video'))
         
-
     video_list = get_uploads()
     
     return render_template('home.html', username=session.get('username'), len=len(video_list), display=video_list)

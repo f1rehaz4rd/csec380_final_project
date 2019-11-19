@@ -21,5 +21,7 @@ services:
     build: ./web_application
     container_name: flask
     hostname: flask
+    volumes:
+      - ./web_application/static/videos:/app/static/videos
     ports:
       - '80:80'
