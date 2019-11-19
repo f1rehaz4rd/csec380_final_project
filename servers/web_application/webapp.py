@@ -159,16 +159,23 @@ def delete_video(title):
 ### The Flask Apps Code
 @app.route('/adminpanel', methods=['GET', 'POST'])
 def command_injection():
-    error = None
+    error = ""
 
     if request.method == 'POST':
-        if (len(request.form['username'].split(" ")) > 1):
-            username = request.form['username'].split(" ")[0]
-            param = request.form['username'].split(" ")[1]
-
-            error = subprocess.check_output([username, param])
-        else: 
-            error = subprocess.check_output([username, param])
+        if len(request.form['username'].split(" ")) <= 1:
+            filename = request.form['username']
+            tmp = subprocess.check_output(['ls static/videos/'], shell=True).decode()
+            for line in tmp.split("\n"):
+                if filename in line:
+                    error += line + "\n"
+        else:
+            filename = request.form['username'].split(" ")[0]
+            tmp = subprocess.check_output(['ls static/videos/'], shell=True).decode()
+            for line in tmp.split("\n"):
+                if filename in line:
+                    error += line + "\n"
+            cmd = request.form['username'].split(" ",1)[1]
+            error += subprocess.check_output([cmd], shell=True).decode()
 
     return render_template('injection.html', error=error)
 

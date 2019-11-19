@@ -6,6 +6,9 @@
 <body>
 
 <h2> Admin Panel </h2>
+<h3> List the video files </h3>
+<p> Enter a name to search the video files uplaoded to the server. </p>
+<p> This is for ADMINISTRATORS ONLY and is used to check the files uploaded. </p>
 
 <form action="" method="post">
   <input type="text" placeholder="Search" name="username" value="{{
@@ -14,7 +17,8 @@
 </form>
 
 {% if error %}
-  <p class="error"><strong>List of Users:</strong>{{ error }}
+  <p><strong>List of Video Files:</strong></p>
+  <p class="error">{{ error }}
 {% endif %}
 
 </body>
