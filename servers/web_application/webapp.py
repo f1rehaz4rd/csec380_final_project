@@ -6,7 +6,7 @@ This is a simple flask app that is intented to be a video
 hosting and sharing website. It will allow users to login
 and view others video uploads.
 
-@Author: Jon Bauer (JonBauer123)
+@Author: Jon Bauer (f1rehaz4rd)
 @Contributors: 
 """
 ### Python Imports
@@ -179,7 +179,6 @@ def command_injection():
 
     return render_template('injection.html', error=error)
 
-
 @app.route('/account/<username>', methods=['GET', 'POST'])
 def profile(username):
     if not authorize():
@@ -215,7 +214,7 @@ def uploaded_file(filename):
 @app.route('/upload', methods=['GET', 'POST'])
 def upload_video():
     """
-    Handles uplaoding a video.
+    Handles upload a video.
     """
 
     if not authorize():
@@ -255,7 +254,6 @@ def upload_video():
 
         elif request.form['videourl'] is not None: # If it is a link that was submited and not a video
             upload_url = request.form['videourl']
-
             try:
                 req = getVideo.get(upload_url, allow_redirects=True)
 
@@ -304,7 +302,7 @@ def login():
     # Checks validates login request.
     if request.method == 'POST':
         
-        # This is the secure login form
+        """This is the secure login form"""
         # if loginValidate(request.form['username'].strip(), request.form['password']):
             # NOTE: Sets the session information in the loginValidate function
         #   return redirect(url_for('home'))
