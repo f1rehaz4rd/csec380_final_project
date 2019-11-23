@@ -1,6 +1,7 @@
-import pytest
 import requests
 
-def test_server():
-    values={'username': 'WRONGUSER', 'password': 'admin'}
-    assert requests.post("http://localhost/login", data=values)
+url="http://localhost/login"
+vals={'username': 'USER', 'password': 'admin'}
+
+r=requests.post(url, data=vals)
+print(b"Welcome admin!!!" in r.content)
