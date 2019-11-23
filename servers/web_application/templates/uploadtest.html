@@ -12,14 +12,14 @@
   </div>
 
   <h2> What is the title? </h2>
-    <form method=post enctype=multipart/form-data>
+    <form method=post>
       <input type="text" placeholder="Title" name="title" value="{{
         request.form.title }}">
 
-      <h1>Upload new File</h1>
-      <input type=file name=file>
+      <h2>Video Link</h2>
+      <input type="text" placeholder="Video URL" name="videourl" value="{{
+        request.form.videourl }}">
       <input type=submit value=Upload>
-      <br>
     </form>
 </body>
 </html> 

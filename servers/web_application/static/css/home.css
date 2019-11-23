@@ -52,8 +52,8 @@ button:hover{
 button.button1{
   position:absolute;
   transition: .5s ease;
-  left: 91%;
-  bottom: 69.7%;
+  right: 1%;
+  top: 20px;
   float: left;
   padding: 24px 39px;
 
@@ -62,21 +62,30 @@ button.button1{
 button.button2{
   position:absolute;
   transition: .5s ease;
-  left: 81%;
-  bottom: 69.7%;
+  right: 10%;
+  top: 20px;
   float: left;
   padding: 24px 29px;
+}
 
+button.button3{
+  position:absolute;
+  transition: .5s ease;
+  right: 19%;
+  top: 20px;
+  float: left;
+  padding: 24px 41px;
 }
 
 button.button4{
   position:absolute;
   transition: .5s ease;
-  left: 71%;
-  bottom: 69.7%;
+  right: 28%;
+  top: 20px;
   float: left;
   padding: 24px 41px;
 }
+
 @media all and (max-width:30em){
   button{
     display:block;

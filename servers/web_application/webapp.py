@@ -211,8 +211,48 @@ def uploaded_file(filename):
 
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
-@app.route('/upload', methods=['GET', 'POST'])
-def upload_video():
+@app.route('/uploadlink', methods=['GET', 'POST'])
+def upload_link():
+    """
+    Handles upload a video.
+    """
+
+    if not authorize():
+        return redirect(url_for('login'))
+
+    if request.method == 'POST':
+        try:
+            upload_url = request.form['videourl']
+            req = getVideo.get(upload_url, allow_redirects=True)
+
+            filename = upload_url.split('/')
+            filename = filename[len(filename) - 1]
+            filename = secure_filename(filename) # Secures the filename
+
+            if file_check(filename):
+                filename = "1" + filename 
+
+            # Saves the file to the server
+            fd = open(os.path.join(app.config['UPLOAD_FOLDER'], filename), "wb")
+            fd.write(req.content)
+            fd.close()
+
+            url= "http://localhost:80/display/" + filename
+
+            video = videos(title=request.form['title'],filename=filename, filetype=filename.split('.')[1],\
+                path=app.config['UPLOAD_FOLDER'], url=url, username=session.get('username'))
+            db.session.add(video)
+            db.session.commit()
+
+            return redirect(url_for('home'))
+        except:
+            return redirect(request.url)
+    
+    return render_template("uploadtest.html")
+
+
+@app.route('/uploadfile', methods=['GET', 'POST'])
+def upload_file():
     """
     Handles upload a video.
     """
@@ -252,33 +292,6 @@ def upload_video():
             except:
                 return redirect(request.url)
 
-        elif request.form['videourl'] is not None: # If it is a link that was submited and not a video
-            upload_url = request.form['videourl']
-            try:
-                req = getVideo.get(upload_url, allow_redirects=True)
-
-                filename = upload_url.split('/')
-                filename = filename[len(filename) - 1]
-                filename = secure_filename(filename) # Secures the filename
-
-                if file_check(filename):
-                    filename = "1" + filename 
-
-                # Saves the file to the server
-                fd = open(os.path.join(app.config['UPLOAD_FOLDER'], filename), "wb")
-                fd.write(req.content)
-                fd.close()
-
-                url= "http://localhost:80/display/" + filename
-
-                video = videos(title=request.form['title'],filename=filename, filetype=filename.split('.')[1],\
-                    path=app.config['UPLOAD_FOLDER'], url=url, username=session.get('username'))
-                db.session.add(video)
-                db.session.commit()
-
-                return redirect(url_for('home'))
-            except:
-                return redirect(request.url)
         
     return render_template("upload.html")
 
@@ -367,8 +380,10 @@ def home():
             return redirect(url_for('logout'))
         elif request.form['submit_button'] == 'account':
             return redirect(url_for('profile_redirect'))
-        elif request.form['submit_button'] == 'upload':
-            return redirect(url_for('upload_video'))
+        elif request.form['submit_button'] == 'uploadfile':
+            return redirect(url_for('upload_file'))
+        elif request.form['submit_button'] == 'uploadlink':
+            return redirect(url_for('upload_link'))
         
     video_list = get_uploads()
     
