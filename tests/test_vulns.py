@@ -12,6 +12,19 @@ def classic_sql():
         return b"admin:" in req.content
 
 """
+Blind Sql injection Test
+"""
+def blind_sql():
+    logindata = {"username": "admin' AND SLEEP(10)#", "password": ""}
+
+    with requests.Session() as s:
+        try:
+            req = s.post("http://localhost/login", data=logindata, timeout=5)
+            return False
+        except:
+            return True
+
+"""
 SSRF Test
 """
 def ssrf_request():
@@ -34,4 +47,5 @@ def command_injection():
 
 def test_vulns():
     assert classic_sql() == True
+    assert blind_sql() == True
     assert command_injection() == True
