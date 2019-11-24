@@ -7,7 +7,7 @@ def uploadfile():
     """
     logindata = {"username": "admin", "password": "admin"}
     titledata = {"title": "Upload Test"}
-    filesdata = {"file": open('test.mp4','rb')}
+    filesdata = {"file": open('tests/test.mp4','rb')}
 
     with requests.Session() as s:
         req = s.post("http://localhost/login", data=logindata, allow_redirects=True)
@@ -38,7 +38,7 @@ def deletevideo():
 
     with requests.Session() as s:
         req = s.post("http://localhost/login", data=logindata, allow_redirects=True)
-        # delreq = s.post("http://localhost/account/admin", data=deletedata, allow_redirects=True)
+        delreq = s.post("http://localhost/account/admin", data=deletedata, allow_redirects=True)
         delreq2 = s.post("http://localhost/account/admin", data=deletedata2, allow_redirects=True)
 
         check = s.get("http://localhost/home")
@@ -49,6 +49,6 @@ def deletevideo():
             return True
 
 def test_uploading():
-    # assert uploadfile() == True
+    assert uploadfile() == True
     assert uploadlink() == True
     assert deletevideo() == True
